@@ -1013,7 +1013,7 @@ const hdriScenes = {
     groundHeight: 6.6,
     groundRadius: 48,
     backgroundLight: 0.82,
-    backgroundDark: 0.82,
+    backgroundDark: 0.34,
     fallback: 0x46382e,
   },
   courtyard: {
@@ -1022,7 +1022,7 @@ const hdriScenes = {
     groundHeight: 7.2,
     groundRadius: 52,
     backgroundLight: 1.08,
-    backgroundDark: 0.92,
+    backgroundDark: 0.38,
     fallback: 0x29362a,
   },
   blackbox: {
@@ -1031,7 +1031,7 @@ const hdriScenes = {
     groundHeight: 8.3,
     groundRadius: 54,
     backgroundLight: 1.04,
-    backgroundDark: 0.82,
+    backgroundDark: 0.32,
     fallback: 0x201b18,
   },
 };
@@ -1099,7 +1099,7 @@ function buildPhotographicScene(group, name, isLight, requestId) {
     courtyard: 0xffe6bc,
     blackbox: 0xffcc91,
   };
-  const key = new THREE.DirectionalLight(keyColors[name], isLight ? 1.5 : 0.58);
+  const key = new THREE.DirectionalLight(keyColors[name], isLight ? 1.5 : 1.28);
   key.position.set(name === 'courtyard' ? 5 : -4, 8.5, 5.5);
   key.castShadow = true;
   key.shadow.mapSize.set(coarsePointer ? 1024 : 2048, coarsePointer ? 1024 : 2048);
@@ -1114,7 +1114,7 @@ function buildPhotographicScene(group, name, isLight, requestId) {
   const fill = new THREE.HemisphereLight(
     name === 'courtyard' ? 0xbad8df : 0xb7c1ca,
     name === 'blackbox' ? 0x160e09 : 0x4b3522,
-    isLight ? 0.66 : 0.24,
+    isLight ? 0.66 : 0.44,
   );
   group.add(fill);
   environmentLights.push(fill);
@@ -1150,7 +1150,7 @@ function buildPhotographicScene(group, name, isLight, requestId) {
     activeEnvironmentMap = pmrem.fromEquirectangular(lightingTexture).texture;
     scene.environment = activeEnvironmentMap;
     scene.environmentRotation.y = config.rotation;
-    scene.environmentIntensity = isLight ? 0.72 : 0.34;
+    scene.environmentIntensity = isLight ? 0.72 : 0.42;
     pruneBackdropCache(backdrop.file);
   }).catch((error) => {
     console.error(`Could not load ${name} environment`, error);
@@ -1180,12 +1180,12 @@ function resolveTheme() {
   effectiveTheme = nextTheme;
   app.dataset.theme = effectiveTheme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', effectiveTheme === 'dark' ? '#16130f' : '#ded7c9');
-  renderer.toneMappingExposure = effectiveTheme === 'dark' ? 1.02 : 0.88;
+  renderer.toneMappingExposure = effectiveTheme === 'dark' ? 0.72 : 0.88;
   materials.bronze.forEach((material) => {
-    material.envMapIntensity = effectiveTheme === 'dark' ? 0.54 : 0.4;
+    material.envMapIntensity = effectiveTheme === 'dark' ? 0.68 : 0.4;
   });
   materials.boss.forEach((material) => {
-    material.envMapIntensity = effectiveTheme === 'dark' ? 0.58 : 0.44;
+    material.envMapIntensity = effectiveTheme === 'dark' ? 0.74 : 0.44;
   });
   materials.mat.color.set(effectiveTheme === 'dark' ? 0xc4ae82 : 0xffffff);
   themeButton.dataset.tooltip = `Theme: ${themeMode}`;
