@@ -213,6 +213,11 @@ a:focus-visible {
   pointer-events: auto;
 }
 
+.top-actions .icon-button {
+  min-width: 42px;
+  min-height: 42px;
+}
+
 .icon-button,
 .transport-button {
   position: relative;
@@ -279,24 +284,46 @@ a:focus-visible {
   transform: translate(-50%, 0);
 }
 
+.top-actions [data-tooltip]::after,
+.scene-tools [data-tooltip]::after {
+  top: 50%;
+  right: calc(100% + 8px);
+  left: auto;
+  transform: translate(3px, -50%);
+}
+
+.top-actions [data-tooltip]:nth-child(2)::after,
+.scene-tools [data-tooltip]:nth-child(2)::after {
+  right: calc(200% + 14px);
+}
+
+.top-actions [data-tooltip]:hover::after,
+.top-actions [data-tooltip]:focus-visible::after,
+.scene-tools [data-tooltip]:hover::after,
+.scene-tools [data-tooltip]:focus-visible::after {
+  transform: translate(0, -50%);
+}
+
 .scene-tools {
   position: absolute;
   z-index: 8;
-  top: max(82px, calc(env(safe-area-inset-top) + 66px));
+  top: max(66px, calc(env(safe-area-inset-top) + 48px));
   right: max(20px, env(safe-area-inset-right));
   display: flex;
   gap: 6px;
 }
 
 .scene-tools .surface {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
 }
 
 .reference-panel {
   position: absolute;
   z-index: 11;
-  top: max(130px, calc(env(safe-area-inset-top) + 114px));
+  top: max(120px, calc(env(safe-area-inset-top) + 102px));
   right: max(20px, env(safe-area-inset-right));
   display: grid;
   width: min(326px, calc(100vw - 32px));
@@ -759,7 +786,7 @@ input[type="range"] {
 @media (max-width: 680px) {
   .topbar {
     padding-top: max(14px, env(safe-area-inset-top));
-    padding-right: max(12px, env(safe-area-inset-right));
+    padding-right: max(14px, env(safe-area-inset-right));
     padding-left: max(14px, env(safe-area-inset-left));
   }
 
@@ -789,13 +816,19 @@ input[type="range"] {
     height: 38px;
   }
 
+  .top-actions .icon-button,
+  .scene-tools .surface {
+    min-width: 38px;
+    min-height: 38px;
+  }
+
   .scene-tools {
-    top: max(68px, calc(env(safe-area-inset-top) + 54px));
-    right: max(12px, env(safe-area-inset-right));
+    top: max(58px, calc(env(safe-area-inset-top) + 44px));
+    right: max(14px, env(safe-area-inset-right));
   }
 
   .reference-panel {
-    top: max(112px, calc(env(safe-area-inset-top) + 98px));
+    top: max(110px, calc(env(safe-area-inset-top) + 96px));
     right: 8px;
     width: calc(100vw - 16px);
   }
