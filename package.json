@@ -1,0 +1,20 @@
+{
+  "name": "kulintang-simulator",
+  "version": "0.1.0",
+  "description": "A browser-playable 3D Maranao kulintang using Katunog field recordings.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "lucide": "^1.28.0",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "vite": "^8.2.0"
+  }
+}

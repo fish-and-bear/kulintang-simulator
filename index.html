@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#16130f" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Kulintang - Play a Maranao gong-chime</title>
+    <meta name="description" content="Play a 3D Maranao kulintang from Tugaya, Lanao del Sur, using field recordings of all eight gongs from Katunog." />
+    <meta name="keywords" content="kulintang, kolintang, Maranao, Philippine music, gong-chime, virtual instrument" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Kulintang" />
+    <meta property="og:description" content="A Maranao kulintang from Tugaya, playable in your browser." />
+    <meta property="og:image" content="/brand/kulintang-social.jpg" />
+    <meta property="og:image:alt" content="Eight bronze kulintang gongs resting on a carved hardwood rack" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Kulintang" />
+    <meta name="twitter:description" content="A Maranao kulintang from Tugaya, playable in your browser." />
+    <meta name="twitter:image" content="/brand/kulintang-social.jpg" />
+    <link rel="icon" href="/brand/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LearningResource",
+        "name": "Kulintang",
+        "description": "A browser-playable simulation of an eight-gong Maranao kulintang recorded in Tugaya, Lanao del Sur.",
+        "learningResourceType": "Interactive instrument",
+        "inLanguage": "en",
+        "isAccessibleForFree": true
+      }
+    </script>
+  </head>
+  <body>
+    <main id="app" data-theme="dark">
+      <canvas id="scene" aria-label="Interactive three-dimensional Maranao kulintang" role="application"></canvas>
+
+      <header class="topbar">
+        <div class="identity">
+          <span class="kulintang-mark" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </span>
+          <div class="identity-copy">
+            <h1>Kulintang</h1>
+            <p>Maranao kolintang</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="icon-button" id="about-button" type="button" aria-label="About the kulintang" data-tooltip="About">
+            <i data-lucide="info"></i>
+          </button>
+          <button class="icon-button" id="theme-button" type="button" aria-label="Theme: automatic" data-tooltip="Theme: automatic">
+            <i data-lucide="sun-moon"></i>
+          </button>
+        </div>
+      </header>
+
+      <section class="scene-tools" aria-label="View controls">
+        <button class="icon-button surface" id="reference-button" type="button" aria-label="Reference recordings" aria-expanded="false" data-tooltip="Reference recordings">
+          <i data-lucide="music-2"></i>
+        </button>
+        <button class="icon-button surface" id="reset-camera" type="button" aria-label="Reset camera" data-tooltip="Reset view">
+          <i data-lucide="focus"></i>
+        </button>
+      </section>
+
+      <section class="reference-panel" id="reference-panel" aria-label="Reference recordings" hidden>
+        <div class="reference-copy">
+          <span>Katunog field recording</span>
+          <select id="reference-select" aria-label="Choose a reference recording">
+            <option value="sample-melody">Sample melody</option>
+            <option value="itagawnan">Itagawnan</option>
+            <option value="mamayugakan">Mamayugakan</option>
+            <option value="inandang">Inandang</option>
+          </select>
+        </div>
+        <button class="reference-play" id="reference-play" type="button" aria-label="Play reference recording">
+          <i data-lucide="play"></i>
+        </button>
+        <span class="reference-time" id="reference-time">0:00</span>
+      </section>
+
+      <div class="load-state" id="load-state" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="load-label">Preparing sound</span>
+      </div>
+
+      <section class="gong-controls" aria-label="Gong controls">
+        <button class="gong-key" data-gong="0" type="button" aria-label="Play gong 1"><span>1</span><kbd>A</kbd></button>
+        <button class="gong-key" data-gong="1" type="button" aria-label="Play gong 2"><span>2</span><kbd>S</kbd></button>
+        <button class="gong-key" data-gong="2" type="button" aria-label="Play gong 3"><span>3</span><kbd>D</kbd></button>
+        <button class="gong-key" data-gong="3" type="button" aria-label="Play gong 4"><span>4</span><kbd>F</kbd></button>
+        <button class="gong-key" data-gong="4" type="button" aria-label="Play gong 5"><span>5</span><kbd>J</kbd></button>
+        <button class="gong-key" data-gong="5" type="button" aria-label="Play gong 6"><span>6</span><kbd>K</kbd></button>
+        <button class="gong-key" data-gong="6" type="button" aria-label="Play gong 7"><span>7</span><kbd>L</kbd></button>
+        <button class="gong-key" data-gong="7" type="button" aria-label="Play gong 8"><span>8</span><kbd>;</kbd></button>
+      </section>
+
+      <nav class="transport" aria-label="Recording controls">
+        <button class="transport-button record" id="record-button" type="button" aria-label="Record" data-tooltip="Record">
+          <i data-lucide="circle"></i>
+        </button>
+        <button class="transport-button" id="play-button" type="button" aria-label="Play recording" data-tooltip="Play" disabled>
+          <i data-lucide="play"></i>
+        </button>
+        <button class="transport-button" id="stop-button" type="button" aria-label="Stop" data-tooltip="Stop" disabled>
+          <i data-lucide="square"></i>
+        </button>
+        <button class="transport-button toggle" id="loop-button" type="button" aria-label="Loop recording" aria-pressed="false" data-tooltip="Loop">
+          <i data-lucide="repeat-2"></i>
+        </button>
+        <span class="transport-readout" id="transport-readout" aria-live="polite">0:00</span>
+        <button class="transport-button" id="clear-button" type="button" aria-label="Clear recording" data-tooltip="Clear" disabled>
+          <i data-lucide="trash-2"></i>
+        </button>
+        <span class="transport-divider" aria-hidden="true"></span>
+        <button class="transport-button" id="settings-button" type="button" aria-label="Sound and scene settings" aria-expanded="false" data-tooltip="Settings">
+          <i data-lucide="settings-2"></i>
+        </button>
+      </nav>
+
+      <aside class="settings-panel" id="settings-panel" aria-label="Sound and scene settings" hidden>
+        <div class="setting-row">
+          <label for="scene-select">Scene</label>
+          <select id="scene-select">
+            <option value="gallery">Garden pavilion</option>
+            <option value="courtyard">Forest clearing</option>
+            <option value="blackbox">Park stage</option>
+          </select>
+        </div>
+        <div class="setting-row slider-row">
+          <label for="volume-slider">Volume</label>
+          <i data-lucide="volume-2" aria-hidden="true"></i>
+          <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.82" />
+        </div>
+        <div class="setting-row slider-row">
+          <label for="room-slider">Room</label>
+          <i data-lucide="waves" aria-hidden="true"></i>
+          <input id="room-slider" type="range" min="0" max="0.5" step="0.01" value="0.16" />
+        </div>
+      </aside>
+
+      <dialog id="about-dialog" class="about-dialog">
+        <div class="dialog-head">
+          <div>
+            <span class="eyebrow">About the instrument</span>
+            <h2>A Maranao kulintang from Tugaya</h2>
+          </div>
+          <button class="icon-button" id="about-close" type="button" aria-label="Close about panel" data-tooltip="Close">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="about-body">
+          <p>This simulator models one eight-gong Maranao kolintang recorded by Katunog in Tugaya, Lanao del Sur. The gongs rest on cords across a painted wooden rack called a langkongan. Katunog catalogs this instrument as &ldquo;Kulintang (Maranao).&rdquo;</p>
+          <p>The row leads an ensemble that may also include a drum, a timekeeping gong, and two agung. Maranao musicians shape a piece through repetition, variation, ornament, and improvisation.</p>
+          <p>Each kolintang set has its own tuning, so the gongs are identified by position instead of fixed Western notes. Gong 1 is the low gong at the player&rsquo;s left; gong 8 is the high gong at the right.</p>
+          <p>All sounds come from Caironesa C. Dimatanday&rsquo;s recorded instrument. The player also includes her sample melody and three named pieces from the same Katunog session.</p>
+          <p>Tap the raised boss to hear the recording as captured. Taps toward the rim use an experimental acoustic model because the Katunog session does not include documented position-specific strikes.</p>
+          <dl class="facts">
+            <div><dt>Tradition</dt><dd>Maranao</dd></div>
+            <div><dt>Gongs</dt><dd>8 bossed kettle gongs</dd></div>
+            <div><dt>Recorded</dt><dd>Tugaya, Lanao del Sur</dd></div>
+            <div><dt>Performer</dt><dd>Caironesa C. Dimatanday</dd></div>
+          </dl>
+          <div class="sources">
+            <span>Sources</span>
+            <a href="https://katunog.asti.dost.gov.ph/" target="_blank" rel="noreferrer">Katunog, DOST-ASTI · PIISD02606</a>
+            <a href="https://asti.dost.gov.ph/communications/angsurian/2019/bridging-the-gap-between-local-music-culture-and-the-new-generation-through-project-katunog/" target="_blank" rel="noreferrer">DOST-ASTI · Project Katunog</a>
+            <a href="https://ncca.gov.ph/wp-content/uploads/2018/11/AGUNG-6-2017-Nov-Dec_opt.pdf" target="_blank" rel="noreferrer">NCCA · Agung</a>
+            <a href="https://escholarship.org/uc/item/1fd434bq" target="_blank" rel="noreferrer">Cadar and Garfias · Maranao Kolintang Music</a>
+            <a href="https://peabody.harvard.edu/marytlacanlale" target="_blank" rel="noreferrer">Harvard Peabody Museum</a>
+            <small>Katunog audio © DOST-ASTI and the University of the Philippines.</small>
+          </div>
+        </div>
+      </dialog>
+
+      <div class="rotate-note" aria-hidden="true"><i data-lucide="rotate-cw"></i></div>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
