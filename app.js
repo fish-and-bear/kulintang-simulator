@@ -70,6 +70,8 @@ createIcons({ icons: uiIcons });
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const keyMap = new Map([
   ['a', 0], ['s', 1], ['d', 2], ['f', 3],
   ['j', 4], ['k', 5], ['l', 6], [';', 7],
@@ -1246,6 +1248,19 @@ const variantCounts = [7, 5, 6, 9, 5, 5, 5, 6];
 const lastVariant = new Array(8).fill(-1);
 const pendingHits = [];
 let loadedCount = 0;
+const IOS_MEDIA_POOL_SIZE = 4;
+const iosMediaRoundRobin = new Array(8).fill(0);
+const iosMediaPools = IS_IOS
+  ? variantCounts.map((_, index) => Array.from({ length: IOS_MEDIA_POOL_SIZE }, () => {
+      const player = new Audio(`/audio/gong-${index + 1}-a.mp3`);
+      player.preload = 'auto';
+      player.playsInline = true;
+      player.setAttribute('playsinline', '');
+      player.setAttribute('webkit-playsinline', '');
+      try { player.load(); } catch { /* Safari can defer loading until the first gesture. */ }
+      return player;
+    }))
+  : [];
 
 function createRoomImpulse(context, duration = 1.45, decay = 2.8) {
   const sampleRate = context.sampleRate;
@@ -1290,9 +1305,39 @@ async function resumeAudio() {
   const context = ensureAudio();
   if (!context) return false;
   if (context.state !== 'running') {
-    try { await context.resume(); } catch { return false; }
+    try {
+      await Promise.race([
+        context.resume(),
+        new Promise((resolve) => window.setTimeout(resolve, 450)),
+      ]);
+    } catch { return false; }
   }
   return context.state === 'running';
+}
+
+function playIosGong(index, velocity = 0.82) {
+  const pool = iosMediaPools[index];
+  if (!pool?.length) return null;
+  const cursor = iosMediaRoundRobin[index];
+  const player = pool[cursor % pool.length];
+  iosMediaRoundRobin[index] = cursor + 1;
+
+  try {
+    player.pause();
+    player.currentTime = 0;
+  } catch { /* The element may not have loaded metadata yet. */ }
+
+  player.muted = false;
+  player.defaultMuted = false;
+  try {
+    player.volume = clamp(Number(volumeSlider.value) * clamp(velocity, 0.2, 1.05), 0, 1);
+  } catch { /* iOS may reserve volume control for the device buttons. */ }
+
+  try {
+    return Promise.resolve(player.play()).then(() => true);
+  } catch (error) {
+    return Promise.reject(error);
+  }
 }
 
 async function preloadAudio() {
@@ -1324,13 +1369,15 @@ async function preloadAudio() {
     window.setTimeout(() => { loadState.hidden = true; }, 220);
     const queued = pendingHits.splice(0);
     queued.forEach(({ index, velocity, position }) => soundGong(index, velocity, position));
-    const loadAlternates = () => {
-      for (let index = 0; index < 8; index += 1) {
-        for (let variant = 1; variant < variantCounts[index]; variant += 1) loadSample(index, variant);
-      }
-    };
-    if ('requestIdleCallback' in window) window.requestIdleCallback(loadAlternates, { timeout: 1800 });
-    else window.setTimeout(loadAlternates, 500);
+    if (!IS_IOS) {
+      const loadAlternates = () => {
+        for (let index = 0; index < 8; index += 1) {
+          for (let variant = 1; variant < variantCounts[index]; variant += 1) loadSample(index, variant);
+        }
+      };
+      if ('requestIdleCallback' in window) window.requestIdleCallback(loadAlternates, { timeout: 1800 });
+      else window.setTimeout(loadAlternates, 500);
+    }
   } else {
     loadLabel.textContent = `${loadedCount}/8 sounds ready`;
   }
@@ -1543,8 +1590,20 @@ function clearRecording() {
 async function strikeGong(index, velocity = 0.82, options = {}) {
   if (index < 0 || index > 7) return;
   const strike = describeStrike(options.position);
-  await resumeAudio();
-  soundGong(index, velocity, strike);
+  if (IS_IOS) {
+    const mediaPlayback = playIosGong(index, velocity);
+    if (mediaPlayback) {
+      mediaPlayback.catch(async (error) => {
+        console.warn('iPhone media playback failed, falling back to Web Audio', error);
+        if (await resumeAudio()) soundGong(index, velocity, strike);
+      });
+    } else if (await resumeAudio()) {
+      soundGong(index, velocity, strike);
+    }
+  } else {
+    await resumeAudio();
+    soundGong(index, velocity, strike);
+  }
   const state = gongStates[index];
   state.strike = strike;
   animateBeaterHit(state, strike, velocity);
