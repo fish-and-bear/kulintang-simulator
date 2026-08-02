@@ -89,6 +89,19 @@ a:focus-visible {
   background: #ded7c9;
 }
 
+#app[data-theme="dark"] select {
+  color-scheme: dark;
+}
+
+#app[data-theme="light"] select {
+  color-scheme: light;
+}
+
+select option {
+  color: var(--ink);
+  background-color: var(--surface-solid);
+}
+
 #scene {
   position: absolute;
   inset: 0;
